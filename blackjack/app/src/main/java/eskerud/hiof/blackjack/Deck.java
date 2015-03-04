@@ -26,13 +26,13 @@ public class Deck extends ArrayList {
                     card.setValue(10);
 
                     if (j == 11) {
-                        card.setName("Jack");
+                        card.setName("jack");
                     } else if (j == 12) {
-                        card.setName("Queen");
+                        card.setName("queen");
                     } else if (j == 13) {
-                        card.setName("King");
+                        card.setName("king");
                     } else if (j == 14) {
-                        card.setName("Ace");
+                        card.setName("ace");
                     }
                 }
                 this.add(card);

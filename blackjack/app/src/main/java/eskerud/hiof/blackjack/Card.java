@@ -1,5 +1,7 @@
 package eskerud.hiof.blackjack;
 
+import android.graphics.Bitmap;
+
 /**
  * Created by Martin on 04.03.2015.
  */
@@ -8,7 +10,7 @@ public class Card {
     private int value;
     private String name;
     private String type;
-
+    private Bitmap image;
 
     public Card(String type) {
         this.type = type;
@@ -20,6 +22,14 @@ public class Card {
 
     public void setValue(int value) {
         this.value = value;
+    }
+
+    public Bitmap getImage() {
+        return image;
+    }
+
+    public void setImage(Bitmap image) {
+        this.image = image;
     }
 
     public String getName() {
