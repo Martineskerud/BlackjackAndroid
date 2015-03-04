@@ -1,4 +1,5 @@
 package eskerud.hiof.blackjack;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
@@ -24,6 +25,7 @@ import java.util.Map;
 
 public class MainActivity extends Activity {
     public static String PACKAGE_NAME = "net.eskerud.martin.masterthesis";
+    private Deck myDeck;
 
     /**
      * Called when the activity is first created.
@@ -32,20 +34,7 @@ public class MainActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(new MyView(this));
-        Deck myDeck = new Deck();
-        Log.d("12124",myDeck.get(0)+"");
-        Log.d("12",myDeck.get(1)+"");
-        Log.d("124",myDeck.get(2)+"");
-        Log.d("124",myDeck.get(3)+"");
-        Log.d("25",myDeck.get(4)+"");
-        Log.d("31",myDeck.get(5)+"");
-        Log.d("124",myDeck.get(6)+"");
-        Log.d("asdasdasd",myDeck.get(7)+"");
-        Log.d("53",myDeck.get(8)+"");
-        Log.d("asdasdasd",myDeck.get(9)+"");
-        Log.d("46",myDeck.get(10)+"");
-        Log.d("46",myDeck.get(11)+"");
-        Log.d("46",myDeck.size()+"");
+        myDeck = new Deck();
     }
 
     public class MyView extends View {
@@ -76,12 +65,9 @@ public class MainActivity extends Activity {
             //TODO: interpolate between current position and finger position
 
 
-                this.invalidate();
-                return true;
+            this.invalidate();
+            return true;
         }
-
-
-
 
 
         @Override
@@ -96,7 +82,10 @@ public class MainActivity extends Activity {
 
             final Paint transparentPaint = new Paint();
             transparentPaint.setARGB(128, 255, 255, 255);
-
+            paint.setTextSize(90);
+            paint.setColor(Color.BLACK);
+            canvas.drawText("Dealer:", 50, 200, paint);
+            canvas.drawText("Your hand:", 50, 800, paint);
             //draw the bitmaps to canvas
             //canvas.drawbitmap
         }
