@@ -25,16 +25,18 @@ import java.util.Map;
 
 public class MainActivity extends Activity {
     public static String PACKAGE_NAME = "net.eskerud.martin.masterthesis";
-    private Deck myDeck;
+    private Deck<Card> myDeck;
 
     /**
      * Called when the activity is first created.
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+    String PACKAGE_NAME = getPackageName();
         super.onCreate(savedInstanceState);
         setContentView(new MyView(this));
-        myDeck = new Deck();
+        myDeck = new Deck<Card>(getResources());
+
     }
 
     public class MyView extends View {
@@ -86,6 +88,9 @@ public class MainActivity extends Activity {
             paint.setColor(Color.BLACK);
             canvas.drawText("Dealer:", 50, 200, paint);
             canvas.drawText("Your hand:", 50, 800, paint);
+
+            //THIS IS THE PROBLEM
+           // myDeck.get(0).
             //draw the bitmaps to canvas
             //canvas.drawbitmap
         }
