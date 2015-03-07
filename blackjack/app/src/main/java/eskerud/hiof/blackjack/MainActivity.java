@@ -100,7 +100,9 @@ public class MainActivity extends Activity {
 
                 canvas.drawBitmap(card.getImage(), 100 + (dealerIndex * 20), 300, paint);
                 dealerIndex++;
+                Log.d("calculation", + dealerScore + " + " +  card.getValue() + "From card:" + card.toString());
                 dealerScore += card.getValue();
+
             }
             if (dealerScore > 17) {
                 dealerStopped = true;
