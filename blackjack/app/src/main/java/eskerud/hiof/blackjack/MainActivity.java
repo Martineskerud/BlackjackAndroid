@@ -6,7 +6,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
@@ -87,7 +86,8 @@ public class MainActivity extends Activity {
             canvas.drawText("Dealer:", 50, 200, paint);
             canvas.drawText("Your hand:", 50, 800, paint);
             canvas.drawText("Hit me!     Stand", 400, 1450, paint);
-            canvas.drawText("" + x + "," + y, x, y, paint);
+            //for debugging purposes. Draws an current X,Y coordinate - at the current X,Y coordinate touched.
+            //   canvas.drawText("" + x + "," + y, x, y, paint);
             Card temp = (Card) myDeck.get(0);
             //  temp.getImage().setHeight(50);
             // temp.getImage().setWidth(50);
@@ -100,16 +100,15 @@ public class MainActivity extends Activity {
 
                 canvas.drawBitmap(card.getImage(), 100 + (dealerIndex * 20), 300, paint);
                 dealerIndex++;
-                Log.d("calculation", + dealerScore + " + " +  card.getValue() + "From card:" + card.toString());
+                Log.d("calculation", +dealerScore + " + " + card.getValue() + "From card:" + card.toString());
                 dealerScore += card.getValue();
 
             }
             if (dealerScore > 17) {
                 dealerStopped = true;
-                canvas.drawText("Dealer: "+ dealerScore, 50, 670, paint);
-            }
-            else{
-                canvas.drawText("Dealer: "+ dealerScore, 50, 670, paint);
+                canvas.drawText("Dealer: " + dealerScore, 50, 670, paint);
+            } else {
+                canvas.drawText("Dealer: " + dealerScore, 50, 670, paint);
             }
 
             int index = 0;
