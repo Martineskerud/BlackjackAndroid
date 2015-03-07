@@ -38,14 +38,16 @@ public class MainActivity extends Activity {
         private float y;
         private float x;
         private int eventType;
-        private long lastPress;
-        private int score;
+        private boolean firstRound = true;
+        private boolean dealerStopped = false;
 
         public MyView(Context context) {
             super(context);
         }
 
-        private ArrayList<Card> cardsToRender=  new ArrayList<Card>();
+        private ArrayList<Card> cardsToRender = new ArrayList<Card>();
+        private ArrayList<Card> dealersCardsToRender = new ArrayList<Card>();
+
         private void initBitmapPositions(Resources res) {
 
             /*
@@ -56,10 +58,10 @@ public class MainActivity extends Activity {
 
         @Override
         public boolean onTouchEvent(MotionEvent e) {
-            x=e.getX();
-            y=e.getY();
+            x = e.getX();
+            y = e.getY();
             eventType = e.getAction();
-            if(eventType==MotionEvent.ACTION_UP){
+            if (eventType == MotionEvent.ACTION_UP) {
 
                 evaluateHit();
             }
@@ -85,58 +87,126 @@ public class MainActivity extends Activity {
             canvas.drawText("Dealer:", 50, 200, paint);
             canvas.drawText("Your hand:", 50, 800, paint);
             canvas.drawText("Hit me!     Stand", 400, 1450, paint);
-            canvas.drawText(""+x+","+y,x,y,paint);
+            canvas.drawText("" + x + "," + y, x, y, paint);
             Card temp = (Card) myDeck.get(0);
             //  temp.getImage().setHeight(50);
             // temp.getImage().setWidth(50);
 
             //draw the cards which we draw.
-            int index = 1;
-            for(Card card :  cardsToRender){
+            int dealerIndex = 1;
+            int dealerScore = 0;
+            //draw the cards for the dealer.
+            for (Card card : dealersCardsToRender) {
 
-                canvas.drawBitmap(card.getImage(),100+(index*20),970,paint);
-                index ++;
+                canvas.drawBitmap(card.getImage(), 100 + (dealerIndex * 20), 300, paint);
+                dealerIndex++;
+                dealerScore += card.getValue();
+            }
+            if (dealerScore > 17) {
+                dealerStopped = true;
+                canvas.drawText("Dealer: "+ dealerScore, 50, 670, paint);
+            }
+            else{
+                canvas.drawText("Dealer: "+ dealerScore, 50, 670, paint);
             }
 
+            int index = 0;
+            int score = 0;
+            for (Card card : cardsToRender) {
+
+                canvas.drawBitmap(card.getImage(), 100 + (index * 20), 970, paint);
+                index++;
+                score += card.getValue();
+            }
+
+            if (score > 21) {
+                canvas.drawText("Score: BUST!", 50, 1300, paint);
+                firstRound = true;
+            } else if (score == 21) {
+                canvas.drawText("Score: BLACKJACK!", 50, 1300, paint);
+                firstRound = true;
+            } else {
+                canvas.drawText("Score: " + score, 50, 1300, paint);
+            }
             this.invalidate();
 
 
         }
 
-        public void evaluateHit(){
-            if(x < 660 && x > 400 && y > 1350 && y < 1500 ){
+        public void evaluateHit() {
+            if (x < 660 && x > 400 && y > 1350 && y < 1500) {
                 hitMe();
-            }
-            else if(x < 1000 && x > 800 && y > 1350 && y < 1500 ){
+            } else if (x < 1000 && x > 800 && y > 1350 && y < 1500) {
                 stand();
-            }
-            else{
-                Log.d(PACKAGE_NAME,"we didn't hit shit, captain");
+            } else {
+                Log.d(PACKAGE_NAME, "we didn't hit shit, captain");
             }
         }
 
-        public void hitMe(){
+        public void hitMe() {
+            //2 cards are dealt in the first round
+            if (firstRound) {
+                //this looks dumb but dunno how else to do it
+                dealerStopped = false;
+                removeAll(cardsToRender);
+                removeAll(dealersCardsToRender);
+                firstRound();
+                firstRound();
+                firstRound = false;
+            } else {
+                Log.d(PACKAGE_NAME, "we hit the 'HIT ME' box");
+                if (currCard == 0) {
+                    myDeck.shuffleDeck();
+                    currCard = 51;
+                }
+                //Unfortunately we need to cast, for some reason...
+                Card currCardTemp = (Card) myDeck.get(currCard);
+                //cards to render will be populated by a new card, which we draw here from the deck
+                cardsToRender.add(currCardTemp);
+                currCard--;
+            }
+        }
 
-            Log.d(PACKAGE_NAME, "we hit the 'HIT ME' box");
-            if(currCard==0){
+        public void firstRound() {
+
+            if (currCard == 0) {
                 myDeck.shuffleDeck();
-                currCard=51;
+                currCard = 51;
             }
             //Unfortunately we need to cast, for some reason...
             Card currCardTemp = (Card) myDeck.get(currCard);
             //cards to render will be populated by a new card, which we draw here from the deck
             cardsToRender.add(currCardTemp);
             currCard--;
+            //this will be called twice, as this method is called twice. Dealer receives two cards as well :)
+            dealerDealsToSelf();
 
         }
-        public void stand(){
+
+        public void dealerDealsToSelf() {
+            if (!dealerStopped) {
+
+                if (currCard == 0) {
+                    myDeck.shuffleDeck();
+                    currCard = 51;
+                }
+                //Unfortunately we need to cast, for some reason...
+                Card currCardTemp = (Card) myDeck.get(currCard);
+                //cards to render will be populated by a new card, which we draw here from the deck
+                dealersCardsToRender.add(currCardTemp);
+                currCard--;
+
+            }
+        }
+
+        public void stand() {
 
             removeAll(cardsToRender);
+            removeAll(dealersCardsToRender);
             Log.d(PACKAGE_NAME, "we hit the 'STAND' box");
+            firstRound = true;
         }
 
-
-        
 
         //Clamps the value of X so the pieces aren't put off screen.
         public boolean removeAll(ArrayList<Card> c) {
