@@ -13,11 +13,14 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 
 public class MainActivity extends Activity {
     public static String PACKAGE_NAME;
     private Deck<Card> myDeck;
-
+    private int currCard = 51;
 
     /**
      * Called when the activity is first created.
@@ -36,12 +39,13 @@ public class MainActivity extends Activity {
         private float x;
         private int eventType;
         private long lastPress;
+        private int score;
 
         public MyView(Context context) {
             super(context);
         }
 
-
+        private ArrayList<Card> cardsToRender=  new ArrayList<Card>();
         private void initBitmapPositions(Resources res) {
 
             /*
@@ -86,7 +90,14 @@ public class MainActivity extends Activity {
             //  temp.getImage().setHeight(50);
             // temp.getImage().setWidth(50);
 
-            canvas.drawBitmap(temp.getImage(), 0, 0, paint);
+            //draw the cards which we draw.
+            int index = 1;
+            for(Card card :  cardsToRender){
+
+                canvas.drawBitmap(card.getImage(),100+(index*20),970,paint);
+                index ++;
+            }
+
             this.invalidate();
 
 
@@ -107,16 +118,38 @@ public class MainActivity extends Activity {
         public void hitMe(){
 
             Log.d(PACKAGE_NAME, "we hit the 'HIT ME' box");
+            if(currCard==0){
+                myDeck.shuffleDeck();
+                currCard=51;
+            }
+            //Unfortunately we need to cast, for some reason...
+            Card currCardTemp = (Card) myDeck.get(currCard);
+            //cards to render will be populated by a new card, which we draw here from the deck
+            cardsToRender.add(currCardTemp);
+            currCard--;
 
         }
         public void stand(){
+
+            removeAll(cardsToRender);
             Log.d(PACKAGE_NAME, "we hit the 'STAND' box");
         }
 
 
+        
 
         //Clamps the value of X so the pieces aren't put off screen.
-
+        public boolean removeAll(ArrayList<Card> c) {
+            boolean modified = false;
+            Iterator<Card> e = c.iterator();
+            while (e.hasNext()) {
+                if (c.contains(e.next())) {
+                    e.remove();
+                    modified = true;
+                }
+            }
+            return modified;
+        }
 
     }
 

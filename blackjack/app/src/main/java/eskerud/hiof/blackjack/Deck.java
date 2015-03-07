@@ -130,7 +130,7 @@ public class Deck<T> extends ArrayList {
         }
         return null;
     }
-    private void shuffleDeck() {
+    public void shuffleDeck() {
         long seed = System.nanoTime();
         Collections.shuffle(this, new Random(seed));
     }
