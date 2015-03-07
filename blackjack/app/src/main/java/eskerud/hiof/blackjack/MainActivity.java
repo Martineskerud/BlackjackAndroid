@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -34,11 +35,18 @@ public class MainActivity extends Activity {
     }
 
     public class MyView extends View {
+
         private float y;
         private float x;
         private int eventType;
+        //first round we deal 2 cards, this is used to keep track of that.
         private boolean firstRound = true;
+        //dealer is finished (at 17 or more score)
         private boolean dealerStopped = false;
+        //stand indicates that we're happy with our score, and we want to compare to the dealer's.
+        private boolean stand = false;
+        //
+        private Bitmap backCard = BitmapFactory.decodeResource(getResources(), R.drawable.back);
 
         public MyView(Context context) {
             super(context);
@@ -47,13 +55,6 @@ public class MainActivity extends Activity {
         private ArrayList<Card> cardsToRender = new ArrayList<Card>();
         private ArrayList<Card> dealersCardsToRender = new ArrayList<Card>();
 
-        private void initBitmapPositions(Resources res) {
-
-            /*
-            * TODO: this should be made in the constructor of the bitmapBlock object instead.
-            */
-
-        }
 
         @Override
         public boolean onTouchEvent(MotionEvent e) {
@@ -89,49 +90,110 @@ public class MainActivity extends Activity {
             //for debugging purposes. Draws an current X,Y coordinate - at the current X,Y coordinate touched.
             //   canvas.drawText("" + x + "," + y, x, y, paint);
             Card temp = (Card) myDeck.get(0);
-            //  temp.getImage().setHeight(50);
-            // temp.getImage().setWidth(50);
-
-            //draw the cards which we draw.
             int dealerIndex = 1;
+            //the score which the player sees that the dealer has (not including the first card...)
             int dealerScore = 0;
-            //draw the cards for the dealer.
-            for (Card card : dealersCardsToRender) {
-
-                canvas.drawBitmap(card.getImage(), 100 + (dealerIndex * 20), 300, paint);
-                dealerIndex++;
-                Log.d("calculation", +dealerScore + " + " + card.getValue() + "From card:" + card.toString());
-                dealerScore += card.getValue();
-
-            }
-            if (dealerScore > 17) {
-                dealerStopped = true;
-                canvas.drawText("Dealer: " + dealerScore, 50, 670, paint);
-            } else {
-                canvas.drawText("Dealer: " + dealerScore, 50, 670, paint);
-            }
-
-            int index = 0;
+            //the score which the dealer actually has
+            int realDealerScore=0;
             int score = 0;
-            for (Card card : cardsToRender) {
+            int index = 0;
 
-                canvas.drawBitmap(card.getImage(), 100 + (index * 20), 970, paint);
-                index++;
-                score += card.getValue();
-            }
+            if (stand) {
+                score = countPlayerCards(index);
+                realDealerScore = countDealerCards(dealerIndex);
+                while(realDealerScore<17){
+                        dealerDealsToSelf();
+                    realDealerScore = countDealerCards(dealerIndex);
 
-            if (score > 21) {
-                canvas.drawText("Score: BUST!", 50, 1300, paint);
-                firstRound = true;
-            } else if (score == 21) {
-                canvas.drawText("Score: BLACKJACK!", 50, 1300, paint);
-                firstRound = true;
+                }
+                if (realDealerScore >= score && realDealerScore <=21) {
+                    canvas.drawText("You lost! ", 50, 900, paint);
+                } else {
+                    canvas.drawText("You won! ", 50, 900, paint);
+                }
+
+                canvas.drawText(score+"", 500, 1100, paint);
+                canvas.drawText(realDealerScore+"", 500, 430, paint);
+
+                for (Card card : dealersCardsToRender){
+                    canvas.drawBitmap(card.getImage(), 100 + (dealerIndex * 20), 300, paint);
+                    dealerIndex++;
+                }
+
+                for (Card card : cardsToRender) {
+                    canvas.drawBitmap(card.getImage(), 100 + (index * 20), 970, paint);
+                    index++;
+                }
+
             } else {
-                canvas.drawText("Score: " + score, 50, 1300, paint);
+                int counter=0;
+                for (Card card : dealersCardsToRender) {
+                    if (counter == 0) {
+
+                        //temp card is a hack to get a back card shown in the first of the deck.
+                        canvas.drawBitmap(backCard, 100, 300, paint);
+                    } else {
+                        //TODO: Consider aces and give the user options to either value them 1 or 11.
+                        canvas.drawBitmap(card.getImage(), 100 + (dealerIndex * 20), 300, paint);
+                        dealerScore += card.getValue();
+                    }
+                    counter ++;
+                    dealerIndex++;
+
+                    realDealerScore += card.getValue();
+                }
+
+                if (realDealerScore >= 17) {
+                    dealerStopped = true;
+                    //TODO: Dealer stops too early, never starts again.
+                    //TODO: Dealer shows first card both score and face value
+                    canvas.drawText("Dealer: " + dealerScore, 50, 670, paint);
+                } else {
+                    canvas.drawText("Dealer: " + dealerScore, 50, 670, paint);
+                }
+
+
+                for (Card card : cardsToRender) {
+                    //TODO: Consider aces and give the user options to either value them 1 or 11.
+                    canvas.drawBitmap(card.getImage(), 100 + (index * 20), 970, paint);
+                    index++;
+                    score += card.getValue();
+                }
+                if (score > 21) {
+                    canvas.drawText("Score: BUST!", 50, 1300, paint);
+                    int badPractice=0;
+                    for (Card card : dealersCardsToRender){
+                        canvas.drawBitmap(card.getImage(), 100 + (badPractice * 20), 300, paint);
+                        badPractice++;
+                    }
+
+                    firstRound = true;
+                } else if (score == 21) {
+                    canvas.drawText("Score: BLACKJACK!", 50, 1300, paint);
+                    firstRound = true;
+                } else {
+                    canvas.drawText("Score: " + score, 50, 1300, paint);
+                }
+
             }
             this.invalidate();
 
 
+        }
+
+        private int countPlayerCards(int score) {
+            for (Card card : cardsToRender) {
+                //TODO: Consider aces and give the user options to either value them 1 or 11.
+                score += card.getValue();
+            }
+            return score;
+        }
+
+        private int countDealerCards(int dealerScore) {
+            for (Card card : dealersCardsToRender) {
+                dealerScore += card.getValue();
+            }
+            return dealerScore;
         }
 
         public void evaluateHit() {
@@ -146,6 +208,7 @@ public class MainActivity extends Activity {
 
         public void hitMe() {
             //2 cards are dealt in the first round
+            stand = false;
             if (firstRound) {
                 //this looks dumb but dunno how else to do it
                 dealerStopped = false;
@@ -165,11 +228,11 @@ public class MainActivity extends Activity {
                 //cards to render will be populated by a new card, which we draw here from the deck
                 cardsToRender.add(currCardTemp);
                 currCard--;
+                dealerDealsToSelf();
             }
         }
 
         public void firstRound() {
-
             if (currCard == 0) {
                 myDeck.shuffleDeck();
                 currCard = 51;
@@ -180,6 +243,7 @@ public class MainActivity extends Activity {
             cardsToRender.add(currCardTemp);
             currCard--;
             //this will be called twice, as this method is called twice. Dealer receives two cards as well :)
+
             dealerDealsToSelf();
 
         }
@@ -201,9 +265,7 @@ public class MainActivity extends Activity {
         }
 
         public void stand() {
-
-            removeAll(cardsToRender);
-            removeAll(dealersCardsToRender);
+            stand = true;
             Log.d(PACKAGE_NAME, "we hit the 'STAND' box");
             firstRound = true;
         }
